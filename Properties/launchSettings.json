@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RemnantWorldChanger": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
