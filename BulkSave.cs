@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -17,52 +20,77 @@ namespace RemnantWorldChanger
     public class BulkSave
     {
         static Random _R = new Random();
-        static T RandomEnumValue<T>()
+        public static Random R { get { return _R; } }
+        public static T RandomEnumValue<T>()
         {
             var v = Enum.GetValues(typeof(T));
-            return (T)v.GetValue(_R.Next(v.Length-1)+1);
+            return (T)v.GetValue(_R.Next(v.Length - 1) + 1);
         }
         public ObservableCollection<DataPackage> SaveInfo { get; set; }
 
         private Dictionary<Guid, byte[]> GuidToBytes { get; set; }
 
+        public BulkSave(ObservableCollection<DataPackage> header, Dictionary<Guid, byte[]> data)
+        {
+            SaveInfo = header;
+            GuidToBytes = data;
+        }
         public BulkSave()
         {
             SaveInfo = new ObservableCollection<DataPackage>();
             GuidToBytes = new Dictionary<Guid, byte[]>();
         }
 
-        public void AddSave(byte[] savedata, string world = "",  string name = "")
+        public void AddSave(byte[] savedata, SaveType type = SaveType.All, string world = "Earth", string name = "Unknown", SaveDifficulty diff = SaveDifficulty.Unset, string mods = "")
         {
             Guid guid = Guid.NewGuid();
+
             GuidToBytes.Add(guid, savedata);
-
-            var list = new string[] {"Hearty", "Vicious", "Spiteful", "Drain", "Skullcracker", "Vortex", "Waller", "RatSwarm", "Displacer", "Teleporter" };
-            
-            Random random = new Random();
-            SaveDifficulty diff = RandomEnumValue<SaveDifficulty>();
-
-            string mods = string.Join(", ",list.OrderBy(x=>random.Next()).Take((int)diff));
-
-
-            SaveInfo.Add(new DataPackage(guid) {Difficulty=diff, World = world, Name = name, Mods = mods });
-
-            
+            var dp = new DataPackage(guid) { Difficulty = diff, World = world, Name = name, Mods = mods, Type = type };
+            SaveInfo.Add(dp);
+            //Debug.WriteLine("Created: "+dp);
+        }
+        public void AddSave(byte[] savedata, DataPackage dp)
+        {
+            GuidToBytes.Add(dp.ID, savedata);
+            SaveInfo.Add(dp);
         }
 
-        public void Serialize()
+        public static DirectoryInfo TryGetSolutionDirectoryInfo(string currentPath = null)
         {
-            File.WriteAllText(@"C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\Output\DataA.json",
+            var directory = new DirectoryInfo(
+                currentPath ?? Directory.GetCurrentDirectory());
+            while (directory != null && !directory.GetFiles("*.sln").Any())
+            {
+                directory = directory.Parent;
+            }
+            return directory;
+        }
+
+        [Conditional("DEBUG")]
+        public void SerializeData(string name)
+        {
+            if (!Directory.Exists(name))
+                Directory.CreateDirectory(name);
+            File.WriteAllText($@"{name}\Data.RIndex",
             JsonSerializer.Serialize(SaveInfo, new JsonSerializerOptions
             {
                 WriteIndented = true
             }));
 
-            File.WriteAllText(@"C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\Output\DataB.json",
+            File.WriteAllText($@"{name}\Data.RData",
             JsonSerializer.Serialize(GuidToBytes, new JsonSerializerOptions
             {
                 WriteIndented = true
             }));
+        }
+        public static BulkSave DeserializeData(string path)
+        {
+            var header = new ObservableCollection<DataPackage>(Directory.EnumerateFiles(path, "*.RIndex").Select(s => JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(s))).SelectMany(x => x));
+
+            var data = Directory.EnumerateFiles(path, "*.RData").Select(s => JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(s))).SelectMany(x => x).ToDictionary(x => x.Key, y => y.Value);
+
+            return new BulkSave(header, data);
         }
 
     }

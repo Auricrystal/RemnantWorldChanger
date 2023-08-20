@@ -15,16 +15,17 @@
             <MenuItem Header="Options">
                 <MenuItem Header="Auto-Update" IsCheckable="True"/>
                 <MenuItem Header="Check for update"/>
+                <MenuItem Name="btnGenExample" Header="Generate Test Saves" Click="GenerateExamples_Click" Visibility="Collapsed" IsEnabled="false"/>
             </MenuItem>
-            <CheckBox Content="Keep Checkpoint"/>
+            <CheckBox Name="cbKeepSave" Content="Keep Checkpoint" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
+            
         </Menu>
         <DockPanel DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
-            <ComboBox Name="cmbSaveType" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="100"/>
-            <TextBox Margin="20,0,0,0" Width="200"/>
+            <ComboBox Name="cmbSaveType" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="100" SelectionChanged="Save_SelectionChanged"/>
             <Button Content="Add Checkpoint" DockPanel.Dock="Top" HorizontalAlignment="Right" Width="100" Height="20" Click="SaveCheckpoint_Click"/>
         </DockPanel>
         <DockPanel >
-            <DataGrid Name="SaveList" SelectionMode="Single" SelectionChanged="SaveList_SelectionChanged" DockPanel.Dock="Left" Width="200" HorizontalAlignment="Left" AutoGenerateColumns="False" Background="{x:Null}" CanUserReorderColumns="False" CanUserResizeColumns="False" IsReadOnly="True">
+            <DataGrid Name="SaveList" SelectionMode="Single" SelectionChanged="Save_SelectionChanged" DockPanel.Dock="Left" Width="200" HorizontalAlignment="Left" AutoGenerateColumns="False" Background="{x:Null}" CanUserReorderColumns="False" CanUserResizeColumns="False" IsReadOnly="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="World" Width="*" Binding="{Binding Value}"/>
                     <DataGridTextColumn Header="Name" Width="2*" Binding="{Binding Key}"/>
@@ -32,11 +33,12 @@
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Edit Save" Click="SaveEdit_Click"/>
+                        <MenuItem Header="Load Save" Click="LoadSave_Click"/>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
             </DataGrid>
             <DockPanel DockPanel.Dock="Right">
-                <ListView Name="DifficultyList" SelectionMode="Single" SelectionChanged="DifficultyList_SelectionChanged" DockPanel.Dock="Top" Height="110" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListView Name="DifficultyList" SelectionMode="Single" SelectionChanged="Save_SelectionChanged" DockPanel.Dock="Top" Height="110" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">
                             <GridViewColumn Width="230">
@@ -47,10 +49,11 @@
                     <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Edit Save" Click="SaveEdit_Click"/>
+                            <MenuItem Header="Load Save" Click="LoadSave_Click"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                 </ListView>
-                <ListView Name="ModifierList" SelectionMode="Single" SelectionChanged="ModifierList_SelectionChanged" DockPanel.Dock="Bottom"  ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListView Name="ModifierList" SelectionMode="Single" SelectionChanged="Save_SelectionChanged" DockPanel.Dock="Bottom"  ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" >
                             <GridViewColumn Width="230">
@@ -61,6 +64,7 @@
                     <ListView.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Edit Save" Click="SaveEdit_Click"/>
+                            <MenuItem Header="Load Save" Click="LoadSave_Click"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                 </ListView>
