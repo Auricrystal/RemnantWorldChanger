@@ -23,11 +23,13 @@ namespace RemnantWorldChanger
     public partial class SaveEditor : Window
     {
         private DataPackage? Original { get; set; }
+        private BulkSave Saves { get; set; }
         public DataPackage? Save { get; private set; }
-        public SaveEditor(DataPackage dp)
+        public SaveEditor(BulkSave bs,DataPackage dp)
         {
             InitializeComponent();
             this.Original = dp;
+            this.Saves = bs;
             EditorWindow.Text = SerializeDataPackage(dp);
         }
 
@@ -50,7 +52,7 @@ namespace RemnantWorldChanger
             Debug.WriteLine(EditorWindow.Text);
             var ser = new JsonSerializerOptions();
             ser.Converters.Add(new JsonStringEnumConverter());
-            DataPackage temp = null;
+            DataPackage? temp = null;
             try
             {
                 temp = JsonSerializer.Deserialize<DataPackage>(EditorWindow.Text, ser);
@@ -64,6 +66,11 @@ namespace RemnantWorldChanger
             }
             if (temp == null)
                 return;
+            if (Saves.SaveInfo.Contains(temp))
+            {
+                MessageBox.Show("An entry already exists with those parameters.", "Duplicate Entry", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             Save = temp;
             Debug.WriteLine($"Updated: {Save}");
             DialogResult = true;

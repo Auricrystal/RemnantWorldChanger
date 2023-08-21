@@ -31,7 +31,7 @@ namespace RemnantWorldChanger
     public partial class MainWindow : Window
     {
 
-        private BulkSave saves;
+        private BulkSave? saves;
         private string Packages { get => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\RemnantWorldChanger\\Packages\\"; }
         private BulkSave Saves
         {
@@ -72,8 +72,8 @@ namespace RemnantWorldChanger
                 return s;
             }
         }
-        private FileSystemWatcher SaveWatcher;
-        private Dictionary<string, byte[]> LockedSaves;
+        private FileSystemWatcher? SaveWatcher;
+        private Dictionary<string, byte[]>? LockedSaves;
         public MainWindow()
         {
             InitializeComponent();

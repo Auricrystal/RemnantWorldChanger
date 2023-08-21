@@ -29,8 +29,8 @@ namespace RemnantWorldChanger
         }
         public static bool EditPackage(this BulkSave Saves, DataPackage dp, bool editmode = true)
         {
-            SaveEditor editor = new SaveEditor(dp);
-            
+            SaveEditor editor = new SaveEditor(Saves, dp);
+
             if (editor.ShowDialog() == false)
             {
                 Debug.WriteLine("Dialog Result False");

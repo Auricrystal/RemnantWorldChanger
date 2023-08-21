@@ -87,9 +87,11 @@ namespace RemnantWorldChanger
         public static BulkSave DeserializeData(string path)
         {
             var indexes = Directory.EnumerateFiles(path, "*.RIndex");
+            MessageBoxResult result=MessageBoxResult.None;
             if (indexes.Count() > 1)
-                MessageBox.Show("Multiple Data Files detected!");
-
+            {
+                result = MessageBox.Show("Merge Packages?", "Multiple Data Files", MessageBoxButton.YesNo, MessageBoxImage.Information);
+            }
             ObservableCollection<DataPackage> header = new ObservableCollection<DataPackage>();
             Dictionary<Guid, byte[]> bulk = new Dictionary<Guid, byte[]>();
 
@@ -106,12 +108,15 @@ namespace RemnantWorldChanger
                 JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(data)).ToList().ForEach(pair => bulk[pair.Key] = pair.Value);
 
             }
+            var bs = new BulkSave(header, bulk);
 
-            //var header = new ObservableCollection<DataPackage>(Directory.EnumerateFiles(path, "*.RIndex").Select(s => JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(s))).SelectMany(x => x).GroupBy(x=>x.ID).Select(x=>x.First()));
+            if (result == MessageBoxResult.Yes)
+            {
+                Directory.Delete(path, true);
+                bs.SerializeData(path);
+            }
 
-            // var data = Directory.EnumerateFiles(path, "*.RData").Select(s => JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(s))).SelectMany(x => x).GroupBy(kvp=>kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.First().Value);
-
-            return new BulkSave(header, bulk);
+            return bs;
         }
 
     }
