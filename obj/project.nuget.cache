@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "n93pHsxLXBkLetuBZGZEO3R8I9ncV3GZUqxRpp1RO6FLSaW3/JkgR3LMtqarCGdbF3zkxlFWn91loC3ZahHQ9Q==",
+  "dgSpecHash": "Qg5qwdJSNMDPryARdKSLpGZjz6IGiGd4zqtOA4KYQK59J1kGafwkpA4Gzn9kDEkRqNXFO9TlU7U0e4CYvTKU3g==",
   "success": true,
   "projectFilePath": "C:\\Users\\Josh\\Documents\\GitHub\\RemnantWorldChanger\\RemnantWorldChanger.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Josh\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\6.0.21\\microsoft.aspnetcore.app.runtime.win-x64.6.0.21.nupkg.sha512",
+    "C:\\Users\\Josh\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\6.0.21\\microsoft.windowsdesktop.app.runtime.win-x64.6.0.21.nupkg.sha512",
+    "C:\\Users\\Josh\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\6.0.21\\microsoft.netcore.app.runtime.win-x64.6.0.21.nupkg.sha512"
+  ],
   "logs": []
 }

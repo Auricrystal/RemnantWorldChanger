@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RemnantWorldChanger"
         mc:Ignorable="d"
-        Title="SaveEditor" Height="450" Width="450">
-    <DockPanel Background="#200">
-        <TextBox Name="EditorWindow" Text="Lore Ipsum" Foreground="White" FontSize="20" DockPanel.Dock="Top" Background="#111" Height="350" Margin="10,10,10,10"/>
-        <DockPanel Background="#220000">
+        Title="SaveEditor" Height="325" Width="475" MinHeight="325" MinWidth="500">
+    <DockPanel Background="#200" LastChildFill="true">
+        <TextBox Name="EditorWindow" Text="Lore Ipsum" Foreground="White" FontSize="20" DockPanel.Dock="Top" Background="#111" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10"/>
+        <DockPanel Background="#220000" Height="50" VerticalAlignment="Bottom" DockPanel.Dock="Left">
             <Button DockPanel.Dock="Right" Content="Cancel" Width="100" Height="40" HorizontalAlignment="Right" Margin="0,-5,10,0" Click="Cancel_Click"/>
             <Button DockPanel.Dock="Right" Content="Apply" Width="100" Height="40" HorizontalAlignment="Right" Margin="0,-5,20,0" Click="ApplyEdit_Click"/>
         </DockPanel>

@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Windows;
 using static RemnantWorldChanger.DataPackage;
 
 namespace RemnantWorldChanger
@@ -28,7 +29,7 @@ namespace RemnantWorldChanger
         }
         public ObservableCollection<DataPackage> SaveInfo { get; set; }
 
-        private Dictionary<Guid, byte[]> GuidToBytes { get; set; }
+        public Dictionary<Guid, byte[]> GuidToBytes { get; set; }
 
         public BulkSave(ObservableCollection<DataPackage> header, Dictionary<Guid, byte[]> data)
         {
@@ -48,13 +49,13 @@ namespace RemnantWorldChanger
             GuidToBytes.Add(guid, savedata);
             var dp = new DataPackage(guid) { Difficulty = diff, World = world, Name = name, Mods = mods, Type = type };
             SaveInfo.Add(dp);
-            //Debug.WriteLine("Created: "+dp);
         }
         public void AddSave(byte[] savedata, DataPackage dp)
         {
             GuidToBytes.Add(dp.ID, savedata);
             SaveInfo.Add(dp);
         }
+
 
         public static DirectoryInfo TryGetSolutionDirectoryInfo(string currentPath = null)
         {
@@ -67,7 +68,6 @@ namespace RemnantWorldChanger
             return directory;
         }
 
-        [Conditional("DEBUG")]
         public void SerializeData(string name)
         {
             if (!Directory.Exists(name))
@@ -86,16 +86,37 @@ namespace RemnantWorldChanger
         }
         public static BulkSave DeserializeData(string path)
         {
-            var header = new ObservableCollection<DataPackage>(Directory.EnumerateFiles(path, "*.RIndex").Select(s => JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(s))).SelectMany(x => x));
+            var indexes = Directory.EnumerateFiles(path, "*.RIndex");
+            if (indexes.Count() > 1)
+                MessageBox.Show("Multiple Data Files detected!");
 
-            var data = Directory.EnumerateFiles(path, "*.RData").Select(s => JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(s))).SelectMany(x => x).ToDictionary(x => x.Key, y => y.Value);
+            ObservableCollection<DataPackage> header = new ObservableCollection<DataPackage>();
+            Dictionary<Guid, byte[]> bulk = new Dictionary<Guid, byte[]>();
 
-            return new BulkSave(header, data);
+            foreach (string index in indexes)
+            {
+                var data = Path.ChangeExtension(index, ".RData");
+                if (!File.Exists(data))
+                {
+                    MessageBox.Show($"{Path.GetFileName(data)} does not exist!!");
+                    continue;
+                }
+                header = new ObservableCollection<DataPackage>(header.Union(JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(index))));
+
+                JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(data)).ToList().ForEach(pair => bulk[pair.Key] = pair.Value);
+
+            }
+
+            //var header = new ObservableCollection<DataPackage>(Directory.EnumerateFiles(path, "*.RIndex").Select(s => JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(s))).SelectMany(x => x).GroupBy(x=>x.ID).Select(x=>x.First()));
+
+            // var data = Directory.EnumerateFiles(path, "*.RData").Select(s => JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(s))).SelectMany(x => x).GroupBy(kvp=>kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.First().Value);
+
+            return new BulkSave(header, bulk);
         }
 
     }
 
-    public class DataPackage
+    public class DataPackage : IEquatable<DataPackage>
     {
         public enum SaveDifficulty { Unset, Survivor, Veteran, Nightmare, Apocalypse }
         public enum SaveType { All, MiniBoss, WorldBoss, SideD, OverworldPOI, Vendor }
@@ -123,6 +144,15 @@ namespace RemnantWorldChanger
         {
             return $"Type: {Type.ToString()} World: {World} Name: {Name} Difficulty: {Difficulty.ToString()} Mods: {Mods} GUID: {ID}";
         }
+
+        public bool Equals(DataPackage? other)
+        {
+            if (other is null)
+                return false;
+            return this.Difficulty == other.Difficulty && this.Name == other.Name && this.Mods == other.Mods;
+        }
+        public override bool Equals(object obj) => Equals(obj as DataPackage);
+        public override int GetHashCode() => (Difficulty, Name, Mods).GetHashCode();
     }
 
 }

@@ -13,8 +13,9 @@
     <DockPanel Background="#220000">
         <Menu DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
             <MenuItem Header="Options">
-                <MenuItem Header="Auto-Update" IsCheckable="True"/>
-                <MenuItem Header="Check for update"/>
+                <MenuItem Header="Auto-Update" IsCheckable="True" IsEnabled="False"/>
+                <MenuItem Header="Check for update" IsEnabled="False"/>
+                <MenuItem Header="Open Data Folder" Click="ViewDataFolder_Click"/>
                 <MenuItem Name="btnGenExample" Header="Generate Test Saves" Click="GenerateExamples_Click" Visibility="Collapsed" IsEnabled="false"/>
             </MenuItem>
             <CheckBox Name="cbKeepSave" Content="Keep Checkpoint" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
@@ -32,6 +33,7 @@
                 </DataGrid.Columns>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Delete Save" Click="DeleteSave_Click"/>
                         <MenuItem Header="Edit Save" Click="SaveEdit_Click"/>
                         <MenuItem Header="Load Save" Click="LoadSave_Click"/>
                     </ContextMenu>
@@ -48,6 +50,7 @@
                     </ListView.View>
                     <ListView.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="Delete Save" Click="DeleteSave_Click"/>
                             <MenuItem Header="Edit Save" Click="SaveEdit_Click"/>
                             <MenuItem Header="Load Save" Click="LoadSave_Click"/>
                         </ContextMenu>
@@ -63,6 +66,7 @@
                     </ListView.View>
                     <ListView.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="Delete Save" Click="DeleteSave_Click"/>
                             <MenuItem Header="Edit Save" Click="SaveEdit_Click"/>
                             <MenuItem Header="Load Save" Click="LoadSave_Click"/>
                         </ContextMenu>

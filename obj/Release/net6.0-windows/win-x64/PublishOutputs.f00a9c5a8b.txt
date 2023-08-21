@@ -1,0 +1,2 @@
+C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\RemnantWorldChanger.dll.config
+C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\RemnantWorldChanger.exe

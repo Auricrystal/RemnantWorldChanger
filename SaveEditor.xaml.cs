@@ -22,11 +22,22 @@ namespace RemnantWorldChanger
     /// </summary>
     public partial class SaveEditor : Window
     {
+        private DataPackage? Original { get; set; }
         public DataPackage? Save { get; private set; }
-        public SaveEditor()
+        public SaveEditor(DataPackage dp)
         {
             InitializeComponent();
+            this.Original = dp;
+            EditorWindow.Text = SerializeDataPackage(dp);
+        }
 
+        private string SerializeDataPackage(DataPackage dp)
+        {
+           return JsonSerializer.Serialize<DataPackage>(dp, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Converters = { new JsonStringEnumConverter() }
+            });
         }
 
         private void ApplyEdit_Click(object sender, RoutedEventArgs e)
@@ -39,11 +50,22 @@ namespace RemnantWorldChanger
             Debug.WriteLine(EditorWindow.Text);
             var ser = new JsonSerializerOptions();
             ser.Converters.Add(new JsonStringEnumConverter());
-            var temp = JsonSerializer.Deserialize<DataPackage>(EditorWindow.Text,ser);
+            DataPackage temp = null;
+            try
+            {
+                temp = JsonSerializer.Deserialize<DataPackage>(EditorWindow.Text, ser);
+            }
+            catch (JsonException je)
+            {
+                var _ = MessageBox.Show(je.Message + "\n\nRevert Data?", "Json Deserialization Error", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (_ == MessageBoxResult.Yes)
+                    EditorWindow.Text=SerializeDataPackage(Original);
+
+            }
             if (temp == null)
                 return;
             Save = temp;
-            Debug.WriteLine($"Updated: {Save.ToString()}");
+            Debug.WriteLine($"Updated: {Save}");
             DialogResult = true;
             this.Close();
         }

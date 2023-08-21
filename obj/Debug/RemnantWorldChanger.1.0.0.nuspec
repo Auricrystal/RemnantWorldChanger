@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>RemnantWorldChanger</id>
+    <version>1.0.0</version>
+    <authors>RemnantWorldChanger</authors>
+    <description>Package Description</description>
+    <dependencies>
+      <group targetFramework="net6.0-windows7.0" />
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net6.0-windows7.0">
+        <frameworkReference name="Microsoft.WindowsDesktop.App.WPF" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Debug\net6.0-windows\win-x64\RemnantWorldChanger.runtimeconfig.json" target="lib\net6.0-windows7.0\RemnantWorldChanger.runtimeconfig.json" />
+    <file src="C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Debug\net6.0-windows\win-x64\RemnantWorldChanger.dll" target="lib\net6.0-windows7.0\RemnantWorldChanger.dll" />
+  </files>
+</package>

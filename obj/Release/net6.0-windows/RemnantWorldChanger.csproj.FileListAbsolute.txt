@@ -2,7 +2,6 @@ C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\net6.0-windows\Re
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\net6.0-windows\RemnantWorldChanger.deps.json
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\net6.0-windows\RemnantWorldChanger.runtimeconfig.json
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\net6.0-windows\RemnantWorldChanger.dll
-C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\net6.0-windows\RemnantWorldChanger.pdb
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\MainWindow.g.cs
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\SaveEditor.g.cs
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\App.g.cs
@@ -17,6 +16,6 @@ C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\Re
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\RemnantWorldChanger.csproj.CoreCompileInputs.cache
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\RemnantWorldChanger.dll
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\refint\RemnantWorldChanger.dll
-C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\RemnantWorldChanger.pdb
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\RemnantWorldChanger.genruntimeconfig.cache
 C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\ref\RemnantWorldChanger.dll
+C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\bin\Release\net6.0-windows\RemnantWorldChanger.dll.config

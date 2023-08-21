@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
@@ -99,6 +100,8 @@ namespace RemnantWorldChanger
             btnGenExample.IsEnabled = true;
         }
 
+
+
         private void SaveCheckpoint_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Saving Checkpoint.....");
@@ -110,8 +113,12 @@ namespace RemnantWorldChanger
 
             DataPackage? dp;
             if (ofd.ShowDialog() == true)
-                if ((dp = NewPackage()) is not null)
-                    Saves.AddSave(File.ReadAllBytes(ofd.FileName), dp);
+                if (Saves.NewPackage(out dp))
+                    Saves.GuidToBytes.Add(dp.ID, File.ReadAllBytes(ofd.FileName));
+                else
+                    Debug.WriteLine("New Package Failed!");
+            else
+                Debug.WriteLine("Dialog False");
 
             SaveList.SelectedIndex = 0;
             ViewUpdate();
@@ -208,48 +215,15 @@ namespace RemnantWorldChanger
             return true;
         }
 
-        private DataPackage? NewPackage()
-        {
-            Guid guid = Guid.NewGuid();
-            return EditPackage(new DataPackage(guid));
-        }
-        private DataPackage? EditPackage(DataPackage dp)
-        {
-            SaveEditor editor = new SaveEditor() { };
-            var ser = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            ser.Converters.Add(new JsonStringEnumConverter());
-            editor.EditorWindow.Text = JsonSerializer.Serialize<DataPackage>(dp, ser);
 
-
-            if (editor.ShowDialog() == false)
-                return null;
-
-            if (editor.Save is null)
-                return null;
-
-            return editor.Save;
-
-
-        }
         private void SaveEdit_Click(object sender, RoutedEventArgs e)
         {
             var dp = FindSelected();
             if (dp != null)
             {
                 Debug.WriteLine($"FOUND: {dp} GUID:{dp.ID}");
-                DataPackage? dpo;
-                if ((dpo = EditPackage(dp)) is not null)
-                    if (Saves.SaveInfo.Remove(dp))
-                        Saves.SaveInfo.Add(dpo);
-                SaveList.ItemsSource = Saves.SaveInfo.GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.First().World);
-                DifficultyList.ItemsSource = Saves.SaveInfo.Select(x => x.Difficulty).Distinct();
-                ModifierList.ItemsSource = Saves.SaveInfo.Select(x => x.Mods).Distinct();
-
-                ViewUpdate();
-
+                if (Saves.EditPackage(dp))
+                    ViewUpdate();
             }
             else { Debug.WriteLine($"Editor: False"); }
         }
@@ -284,8 +258,20 @@ namespace RemnantWorldChanger
 
         private void LoadSave_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"Loading: {FindSelected()}");
+            DataPackage? _ = FindSelected();
+            Debug.WriteLine($"Loading: {_}");
+            if (_ is null)
+                return;
 
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "World Saves (.sav)|save_*.sav";
+            ofd.DefaultExt = ".sav";
+            ofd.Title = "Overwrite Save";
+
+            if (ofd.ShowDialog() == true)
+                File.WriteAllBytes(ofd.FileName, Saves.GuidToBytes[_.ID]);
+            else
+                Debug.WriteLine("Load Save Failed!");
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -350,6 +336,30 @@ namespace RemnantWorldChanger
                 }
             });
             SaveWatcher.EnableRaisingEvents = true;
+        }
+
+        private void ViewDataFolder_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(Environment.GetEnvironmentVariable("WINDIR") + @"\explorer.exe", Packages);
+            }
+            catch (Win32Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void DeleteSave_Click(object sender, RoutedEventArgs e)
+        {
+            var _ = FindSelected();
+            if (_ == null)
+                return;
+            var result = MessageBox.Show($"Are you sure you want to delete: \n\nDifficulty: {_.Difficulty}\nName: {_.Name}\nMods: {_.Mods} ", "WARNING", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+                if (Saves.GuidToBytes.Remove(_.ID))
+                    Saves.SaveInfo.Remove(_);
+            ViewUpdate();
         }
     }
 }
