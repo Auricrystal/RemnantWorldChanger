@@ -25,7 +25,7 @@ namespace RemnantWorldChanger
         public static T RandomEnumValue<T>()
         {
             var v = Enum.GetValues(typeof(T));
-            return (T)v.GetValue(_R.Next(v.Length - 1) + 1);
+            return (T)v.GetValue(_R.Next(v.Length-1)+1)!;
         }
         public ObservableCollection<DataPackage> SaveInfo { get; set; }
 
@@ -59,13 +59,12 @@ namespace RemnantWorldChanger
 
         public static DirectoryInfo TryGetSolutionDirectoryInfo(string currentPath = null)
         {
-            var directory = new DirectoryInfo(
-                currentPath ?? Directory.GetCurrentDirectory());
+            var directory = new DirectoryInfo( currentPath ?? Directory.GetCurrentDirectory());
             while (directory != null && !directory.GetFiles("*.sln").Any())
             {
                 directory = directory.Parent;
             }
-            return directory;
+            return directory!;
         }
 
         public void SerializeData(string name)
@@ -103,9 +102,9 @@ namespace RemnantWorldChanger
                     MessageBox.Show($"{Path.GetFileName(data)} does not exist!!");
                     continue;
                 }
-                header = new ObservableCollection<DataPackage>(header.Union(JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(index))));
+                header = new ObservableCollection<DataPackage>(header.Union(JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(index))!));
 
-                JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(data)).ToList().ForEach(pair => bulk[pair.Key] = pair.Value);
+                JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(data))!.ToList().ForEach(pair => bulk[pair.Key] = pair.Value);
 
             }
             var bs = new BulkSave(header, bulk);
@@ -124,7 +123,7 @@ namespace RemnantWorldChanger
     public class DataPackage : IEquatable<DataPackage>
     {
         public enum SaveDifficulty { Unset, Survivor, Veteran, Nightmare, Apocalypse }
-        public enum SaveType { All, MiniBoss, WorldBoss, SideD, OverworldPOI, Vendor }
+        public enum SaveType { All, MiniBoss, WorldBoss, SideD, OverworldPOI, Vendor, ItemDrop }
 
         [JsonConstructor]
         public DataPackage() { }

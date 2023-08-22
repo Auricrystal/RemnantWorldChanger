@@ -20,7 +20,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using static RemnantWorldChanger.DataPackage;
 
 namespace RemnantWorldChanger
@@ -31,29 +30,22 @@ namespace RemnantWorldChanger
     public partial class MainWindow : Window
     {
 
-        private BulkSave? saves;
         private string Packages { get => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\RemnantWorldChanger\\Packages\\"; }
+
+        private BulkSave? saves;
         private BulkSave Saves
         {
             get
             {
-                if (saves != null)
+                if (saves is not null)
                     return saves;
 
-                if (Directory.Exists(Packages))
-                {
-                    Debug.WriteLine($"Bulk folder exists! {Packages}");
-                    saves = BulkSave.DeserializeData(Packages);
-                    return saves;
-                }
-                else
-                {
+                if (!Directory.Exists(Packages))
+                    return saves = new BulkSave();
 
-                    saves = new BulkSave();
-                    return saves;
-                }
-
+                return saves = BulkSave.DeserializeData(Packages);
             }
+            set { saves = value; }
         }
         private static string GameSavePath
         {
@@ -72,8 +64,45 @@ namespace RemnantWorldChanger
                 return s;
             }
         }
-        private FileSystemWatcher? SaveWatcher;
-        private Dictionary<string, byte[]>? LockedSaves;
+        private FileSystemWatcher? savewatcher;
+        private FileSystemWatcher SaveWatcher
+        {
+            get
+            {
+                if (savewatcher is null)
+                {
+                    Debug.WriteLine("Making new save watcher");
+                    savewatcher = new FileSystemWatcher()
+                    {
+                        Path = GameSavePath,
+                        Filter = "save_*.sav",
+                        NotifyFilter = NotifyFilters.Attributes
+                                     | NotifyFilters.CreationTime
+                                     | NotifyFilters.DirectoryName
+                                     | NotifyFilters.FileName
+                                     | NotifyFilters.LastAccess
+                                     | NotifyFilters.LastWrite
+                                     | NotifyFilters.Security
+                                     | NotifyFilters.Size
+                    };
+                    savewatcher.Changed += LockedSave_Changed;
+                    savewatcher.Created += LockedSave_Changed;
+                }
+                return savewatcher;
+            }
+            set { savewatcher = value; }
+        }
+        private Dictionary<string, byte[]>? lockedsaves;
+        private Dictionary<string, byte[]> LockedSaves
+        {
+            get
+            {
+                if (lockedsaves is null)
+                    lockedsaves = new();
+                return lockedsaves;
+            }
+            set { lockedsaves = value; }
+        }
         public MainWindow()
         {
             InitializeComponent();
@@ -106,7 +135,7 @@ namespace RemnantWorldChanger
         {
             Debug.WriteLine("Saving Checkpoint.....");
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "World Saves (.sav)|save_*.sav";
+            ofd.Filter = "World Saves (.sav)|*.sav";
             ofd.DefaultExt = ".sav";
             ofd.Title = "Test Window";
 
@@ -153,7 +182,7 @@ namespace RemnantWorldChanger
             else
                 CollectionViewSource.GetDefaultView(SaveList.ItemsSource).Filter = o =>
                 {
-                    return Saves.SaveInfo.ToList().Find(x => x.Name == ((KeyValuePair<string, string>)o).Key).Type == st;
+                    return Saves.SaveInfo.ToList().Find(x => x.Name == ((KeyValuePair<string, string>)o).Key)!.Type == st;
                 };
             if (SaveList.SelectedIndex == -1)
             {
@@ -182,20 +211,12 @@ namespace RemnantWorldChanger
                 ModifierList.SelectedIndex = 0;
         }
 
-
-
-
-        private void PrintSave()
-        {
-            Debug.WriteLine(FindSelected());
-        }
         private DataPackage? FindSelected()
         {
             string name = ((KeyValuePair<string, string>)SaveList.SelectedItem).Key;
-            string world = ((KeyValuePair<string, string>)SaveList.SelectedItem).Value;
             SaveDifficulty diff = (SaveDifficulty)(DifficultyList.SelectedItem ?? SaveDifficulty.Unset);
             string mod = ModifierList.SelectedItem?.ToString() ?? "Null";
-            DataPackage found;
+            DataPackage? found;
             if (Exists(name, diff, mod, out found))
                 return found;
             return null;
@@ -276,40 +297,20 @@ namespace RemnantWorldChanger
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"Path: {GameSavePath}");
-            if (SaveWatcher is null)
-            {
-                Debug.WriteLine("Making new save watcher");
-                SaveWatcher = new FileSystemWatcher()
-                {
-                    Path = GameSavePath,
-                    Filter = "save_*.sav",
-                    NotifyFilter = NotifyFilters.Attributes
-                                 | NotifyFilters.CreationTime
-                                 | NotifyFilters.DirectoryName
-                                 | NotifyFilters.FileName
-                                 | NotifyFilters.LastAccess
-                                 | NotifyFilters.LastWrite
-                                 | NotifyFilters.Security
-                                 | NotifyFilters.Size
-                };
-                SaveWatcher.Changed += LockedSave_Changed;
-                SaveWatcher.Created += LockedSave_Changed;
+            //Debug.WriteLine($"Path: {GameSavePath}");
 
-
-            }
             Debug.WriteLine($"CheckBox: {cbKeepSave.IsChecked ?? false}");
             SaveWatcher.EnableRaisingEvents = cbKeepSave.IsChecked ?? false;
             if (cbKeepSave.IsChecked ?? false)
             {
-                if (LockedSaves is null)
-                    LockedSaves = new();
+
                 foreach (string s in Directory.EnumerateFiles(GameSavePath, "save_?.sav"))
-                    LockedSaves.Add(s.Split(@"\").Last(), File.ReadAllBytes(s));
+                    LockedSaves.Add(Path.GetFileNameWithoutExtension(s), File.ReadAllBytes(s));
+
             }
             else
             {
-                LockedSaves = null;
+                LockedSaves.Clear();
             }
         }
         private void LockedSave_Changed(object sender, FileSystemEventArgs e)
@@ -322,7 +323,7 @@ namespace RemnantWorldChanger
                 try
                 {
                     Debug.WriteLine("Overwriting!");
-                    File.WriteAllBytes(GameSavePath + $@"\{e.Name}", LockedSaves[e.Name]);
+                    File.WriteAllBytes(GameSavePath + $@"\{e.Name}", LockedSaves[Path.GetFileNameWithoutExtension(e.FullPath)]);
                 }
                 catch (IOException ex)
                 {
