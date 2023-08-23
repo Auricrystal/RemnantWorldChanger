@@ -22,11 +22,12 @@
             
         </Menu>
         <DockPanel DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
-            <ComboBox Name="cmbSaveType" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="100" SelectionChanged="Save_SelectionChanged"/>
+            <ComboBox Name="cmbSaveType" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="100" />
+            <TextBox Name="tbSearchbar" Width="230" Margin="10,0,0,0"  />
             <Button Content="Add Checkpoint" DockPanel.Dock="Top" HorizontalAlignment="Right" Width="100" Height="20" Click="SaveCheckpoint_Click"/>
         </DockPanel>
         <DockPanel >
-            <DataGrid Name="SaveList" SelectionMode="Single" SelectionChanged="Save_SelectionChanged" DockPanel.Dock="Left" Width="200" HorizontalAlignment="Left" AutoGenerateColumns="False" Background="{x:Null}" CanUserReorderColumns="False" CanUserResizeColumns="False" IsReadOnly="True">
+            <DataGrid Name="SaveList" SelectionMode="Single"  DockPanel.Dock="Left" Width="200" HorizontalAlignment="Left" AutoGenerateColumns="False" Background="{x:Null}" CanUserReorderColumns="False" CanUserResizeColumns="False" IsReadOnly="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="World" Width="*" Binding="{Binding Value}"/>
                     <DataGridTextColumn Header="Name" Width="2*" Binding="{Binding Key}"/>
@@ -40,7 +41,7 @@
                 </DataGrid.ContextMenu>
             </DataGrid>
             <DockPanel DockPanel.Dock="Right">
-                <ListView Name="DifficultyList" SelectionMode="Single" SelectionChanged="Save_SelectionChanged" DockPanel.Dock="Top" Height="110" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListView Name="DifficultyList" SelectionMode="Single"  DockPanel.Dock="Top" Height="110" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">
                             <GridViewColumn Width="230">
@@ -56,7 +57,7 @@
                         </ContextMenu>
                     </ListView.ContextMenu>
                 </ListView>
-                <ListView Name="ModifierList" SelectionMode="Single" SelectionChanged="Save_SelectionChanged" DockPanel.Dock="Bottom"  ScrollViewer.HorizontalScrollBarVisibility="Hidden">
+                <ListView Name="ModifierList" SelectionMode="Single" DockPanel.Dock="Bottom"  ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" >
                             <GridViewColumn Width="230">

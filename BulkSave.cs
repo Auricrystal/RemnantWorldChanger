@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using static RemnantWorldChanger.DataPackage;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RemnantWorldChanger
 {
@@ -25,7 +26,7 @@ namespace RemnantWorldChanger
         public static T RandomEnumValue<T>()
         {
             var v = Enum.GetValues(typeof(T));
-            return (T)v.GetValue(_R.Next(v.Length-1)+1)!;
+            return (T)v.GetValue(_R.Next(v.Length - 1) + 1)!;
         }
         public ObservableCollection<DataPackage> SaveInfo { get; set; }
 
@@ -59,7 +60,7 @@ namespace RemnantWorldChanger
 
         public static DirectoryInfo TryGetSolutionDirectoryInfo(string currentPath = null)
         {
-            var directory = new DirectoryInfo( currentPath ?? Directory.GetCurrentDirectory());
+            var directory = new DirectoryInfo(currentPath ?? Directory.GetCurrentDirectory());
             while (directory != null && !directory.GetFiles("*.sln").Any())
             {
                 directory = directory.Parent;
@@ -86,7 +87,7 @@ namespace RemnantWorldChanger
         public static BulkSave DeserializeData(string path)
         {
             var indexes = Directory.EnumerateFiles(path, "*.RIndex");
-            MessageBoxResult result=MessageBoxResult.None;
+            MessageBoxResult result = MessageBoxResult.None;
             if (indexes.Count() > 1)
             {
                 result = MessageBox.Show("Merge Packages?", "Multiple Data Files", MessageBoxButton.YesNo, MessageBoxImage.Information);
@@ -152,10 +153,39 @@ namespace RemnantWorldChanger
         public bool Equals(DataPackage? other)
         {
             if (other is null)
+            {
+                //Debug.WriteLine($"Comparing:{this}\nTO\nNULL ");
                 return false;
-            return this.Difficulty == other.Difficulty && this.Name == other.Name && this.Mods == other.Mods;
+            }
+
+            //if (this.ID == other.ID)
+            //{
+            //    Debug.WriteLine($"Comparing:{this}\nTO\n{other}\nID MATCH ");
+            //    return true;
+            //}
+
+            bool test = this.Difficulty == other.Difficulty && this.Name == other.Name && this.Mods == other.Mods;
+            //Debug.WriteLine($"Comparing:\n{this}\nTO\n{other}\nResult: {test}");
+
+            return test;
         }
-        public override bool Equals(object obj) => Equals(obj as DataPackage);
+        public override bool Equals(object obj)
+        {
+            //Debug.WriteLine($"Override Comparing:\n{this}\nTO\n{obj}");
+            return Equals(obj as DataPackage);
+        }
+
+        public bool Contains(string s)
+        {
+            var _ = new string[] { Name, World, Mods, Difficulty.ToString() };
+            return _.ToList().Select(x =>x.ToLower()).Any(x=>x.Contains(s));
+            
+        }
+
+        public bool Contains(params string[] st)
+        {
+            return st.ToList().Any(x => Contains(x));
+        }
         public override int GetHashCode() => (Difficulty, Name, Mods).GetHashCode();
     }
 

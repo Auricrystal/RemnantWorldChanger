@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Text.Json;
@@ -20,6 +21,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using System.Xml.Linq;
 using static RemnantWorldChanger.DataPackage;
 
 namespace RemnantWorldChanger
@@ -30,7 +32,16 @@ namespace RemnantWorldChanger
     public partial class MainWindow : Window
     {
 
-        private string Packages { get => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\RemnantWorldChanger\\Packages\\"; }
+        private string Packages
+        {
+            get
+            {
+               var _= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\RemnantWorldChanger\\Packages\\";
+                if (!Directory.Exists(_))
+                    Directory.CreateDirectory(_);
+                return _;
+            }
+        }
 
         private BulkSave? saves;
         private BulkSave Saves
@@ -103,6 +114,7 @@ namespace RemnantWorldChanger
             }
             set { lockedsaves = value; }
         }
+        private Display display;
         public MainWindow()
         {
             InitializeComponent();
@@ -112,15 +124,20 @@ namespace RemnantWorldChanger
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            SaveList.ItemsSource = Saves.SaveInfo.GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.First().World);
-            DifficultyList.ItemsSource = Saves.SaveInfo.Select(x => x.Difficulty).Distinct();
-            ModifierList.ItemsSource = Saves.SaveInfo.Select(x => x.Mods).Distinct();
-
-
             cmbSaveType.ItemsSource = Enum.GetValues(typeof(SaveType));
+            DifficultyList.ItemsSource = Enum.GetValues(typeof(SaveDifficulty));
 
             cmbSaveType.SelectedIndex = 0;
+            display = new Display(Saves.SaveInfo,SaveList,DifficultyList,ModifierList,tbSearchbar,cmbSaveType);
+
+            Saves.SaveInfo.CollectionChanged += display.SaveInfo_CollectionChanged;
+
+            SaveList.SelectedIndex = 0;
+            display.Regenerate();
+            
         }
+
+        
 
         [Conditional("DEBUG")]
         private void EnableDebugOptions()
@@ -150,7 +167,8 @@ namespace RemnantWorldChanger
                 Debug.WriteLine("Dialog False");
 
             SaveList.SelectedIndex = 0;
-            ViewUpdate();
+
+            display.Regenerate();
             Debug.WriteLine($"Count: {Saves.SaveInfo.Count}");
             Debug.WriteLine($"Count: {SaveList.Items.Count}");
         }
@@ -169,47 +187,6 @@ namespace RemnantWorldChanger
         }
 
 
-        private void ViewUpdate()
-        {
-            SaveList.ItemsSource = Saves.SaveInfo.GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.First().World);
-            DifficultyList.ItemsSource = Saves.SaveInfo.Select(x => x.Difficulty).Distinct().OrderBy(x => ((int)x));
-            ModifierList.ItemsSource = Saves.SaveInfo.Select(x => x.Mods).Distinct().OrderBy(x => x);
-
-            var st = ((SaveType)cmbSaveType.SelectedItem);
-
-            if (st == SaveType.All)
-                CollectionViewSource.GetDefaultView(SaveList.ItemsSource).Filter = o => true;
-            else
-                CollectionViewSource.GetDefaultView(SaveList.ItemsSource).Filter = o =>
-                {
-                    return Saves.SaveInfo.ToList().Find(x => x.Name == ((KeyValuePair<string, string>)o).Key)!.Type == st;
-                };
-            if (SaveList.SelectedIndex == -1)
-            {
-                CollectionViewSource.GetDefaultView(DifficultyList.ItemsSource).Filter = o => false;
-                CollectionViewSource.GetDefaultView(ModifierList.ItemsSource).Filter = o => false;
-                return;
-            }
-
-            var name = ((KeyValuePair<string, string>)SaveList.SelectedItem).Key;
-
-            CollectionViewSource.GetDefaultView(DifficultyList.ItemsSource).Filter = o =>
-            {
-                return Saves.SaveInfo.Where(x => x.Name == name).Select(x => x.Difficulty.ToString()).Contains(o.ToString());
-            };
-
-            if (DifficultyList.SelectedIndex == -1)
-                DifficultyList.SelectedIndex = 0;
-
-            var diff = DifficultyList.SelectedItem.ToString();
-            CollectionViewSource.GetDefaultView(ModifierList.ItemsSource).Filter = o =>
-            {
-
-                return Saves.SaveInfo.Where(x => x.Name == name && x.Difficulty.ToString() == diff).Select(y => y.Mods).Contains(o.ToString());
-            };
-            if (ModifierList.SelectedIndex == -1)
-                ModifierList.SelectedIndex = 0;
-        }
 
         private DataPackage? FindSelected()
         {
@@ -244,7 +221,7 @@ namespace RemnantWorldChanger
             {
                 Debug.WriteLine($"FOUND: {dp} GUID:{dp.ID}");
                 if (Saves.EditPackage(dp))
-                    ViewUpdate();
+                    display.Regenerate();
             }
             else { Debug.WriteLine($"Editor: False"); }
         }
@@ -264,19 +241,16 @@ namespace RemnantWorldChanger
                 {
                     string mod = string.Join(", ", mods.OrderBy(x => BulkSave.R.Next()).Take((int)diff).OrderBy(x => x));
                     if (!Exists($"Save{j = i % 20}", diff, mod))
-                        Saves.AddSave(new byte[] { }, (SaveType)(j % 5 + 1), worlds[j % 3], $"Save{j}", diff, mod);
+                        Saves.AddSave(Array.Empty<byte>(), (SaveType)(j % 5 + 1), worlds[j % 3], $"Save{j}", diff, mod);
                 }
             }
-            ViewUpdate();
             skipupdate = false;
         }
 
-        private void Save_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!skipupdate)
-                ViewUpdate();
-        }
-
+       
+       
+        
+       
         private void LoadSave_Click(object sender, RoutedEventArgs e)
         {
             DataPackage? _ = FindSelected();
@@ -360,7 +334,9 @@ namespace RemnantWorldChanger
             if (result == MessageBoxResult.Yes)
                 if (Saves.GuidToBytes.Remove(_.ID))
                     Saves.SaveInfo.Remove(_);
-            ViewUpdate();
+            display.Regenerate();
         }
+
+       
     }
 }
