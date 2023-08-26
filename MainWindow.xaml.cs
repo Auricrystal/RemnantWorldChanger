@@ -32,11 +32,12 @@ namespace RemnantWorldChanger
     public partial class MainWindow : Window
     {
 
+        private FileSystemWatcher? _watcher;
         private string Packages
         {
             get
             {
-               var _= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\RemnantWorldChanger\\Packages\\";
+                var _ = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\RemnantWorldChanger\\Packages\\";
                 if (!Directory.Exists(_))
                     Directory.CreateDirectory(_);
                 return _;
@@ -55,6 +56,7 @@ namespace RemnantWorldChanger
                     return saves = new BulkSave();
 
                 return saves = BulkSave.DeserializeData(Packages);
+
             }
             set { saves = value; }
         }
@@ -103,6 +105,50 @@ namespace RemnantWorldChanger
             }
             set { savewatcher = value; }
         }
+        private FileSystemWatcher PackageWatcher
+        {
+            get
+            {
+                if (_watcher is null)
+                {
+                    _watcher = new FileSystemWatcher()
+                    {
+                        Path = Packages,
+                        NotifyFilter = NotifyFilters.Attributes
+                                     | NotifyFilters.CreationTime
+                                     | NotifyFilters.DirectoryName
+                                     | NotifyFilters.FileName
+                                     | NotifyFilters.LastAccess
+                                     | NotifyFilters.LastWrite
+                                     | NotifyFilters.Security
+                                     | NotifyFilters.Size,
+                        Filter = "*.RIndex"
+                    };
+                    _watcher.Changed += Watcher_Changed;
+                    _watcher.Created += Watcher_Changed;
+                }
+                return _watcher;
+            }
+        }
+
+        private void Watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            var result = MessageBox.Show("Reload Saves?", "New Data Detected", MessageBoxButton.YesNo, MessageBoxImage.Information);
+            if (result != MessageBoxResult.Yes)
+                return;
+            Saves = BulkSave.DeserializeData(Packages);
+            try
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    display?.UpdateData(Saves.SaveInfo);
+                });
+
+            }
+            catch (Exception) { }
+
+        }
+
         private Dictionary<string, byte[]>? lockedsaves;
         private Dictionary<string, byte[]> LockedSaves
         {
@@ -114,7 +160,7 @@ namespace RemnantWorldChanger
             }
             set { lockedsaves = value; }
         }
-        private Display display;
+        private Display? display;
         public MainWindow()
         {
             InitializeComponent();
@@ -128,16 +174,20 @@ namespace RemnantWorldChanger
             DifficultyList.ItemsSource = Enum.GetValues(typeof(SaveDifficulty));
 
             cmbSaveType.SelectedIndex = 0;
-            display = new Display(Saves.SaveInfo,SaveList,DifficultyList,ModifierList,tbSearchbar,cmbSaveType);
+            display = new Display(Saves.SaveInfo, SaveList, DifficultyList, ModifierList, tbSearchbar, cmbSaveType);
 
             Saves.SaveInfo.CollectionChanged += display.SaveInfo_CollectionChanged;
 
             SaveList.SelectedIndex = 0;
-            display.Regenerate();
-            
+
+            PackageWatcher.EnableRaisingEvents = true;
+            //display.Regenerate();
+
+            //Debug.WriteLine($"Mods: {ModifierList.Items.Count}");
+
         }
 
-        
+
 
         [Conditional("DEBUG")]
         private void EnableDebugOptions()
@@ -162,13 +212,19 @@ namespace RemnantWorldChanger
                 if (Saves.NewPackage(out dp))
                     Saves.GuidToBytes.Add(dp.ID, File.ReadAllBytes(ofd.FileName));
                 else
+                {
                     Debug.WriteLine("New Package Failed!");
+                    return;
+                }
             else
-                Debug.WriteLine("Dialog False");
+            {
+                Debug.WriteLine("Dialog False"); 
+                return;
+            }
 
             SaveList.SelectedIndex = 0;
 
-            display.Regenerate();
+            display?.Regenerate();
             Debug.WriteLine($"Count: {Saves.SaveInfo.Count}");
             Debug.WriteLine($"Count: {SaveList.Items.Count}");
         }
@@ -183,6 +239,7 @@ namespace RemnantWorldChanger
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            PackageWatcher.EnableRaisingEvents = false;
             Saves.SerializeData(Packages);
         }
 
@@ -247,10 +304,10 @@ namespace RemnantWorldChanger
             skipupdate = false;
         }
 
-       
-       
-        
-       
+
+
+
+
         private void LoadSave_Click(object sender, RoutedEventArgs e)
         {
             DataPackage? _ = FindSelected();
@@ -337,6 +394,6 @@ namespace RemnantWorldChanger
             display.Regenerate();
         }
 
-       
+
     }
 }

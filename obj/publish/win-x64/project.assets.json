@@ -9,19 +9,19 @@
     "net6.0-windows7.0": []
   },
   "packageFolders": {
-    "C:\\Users\\Josh\\.nuget\\packages\\": {}
+    "C:\\Users\\AuriCrystal\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Josh\\Documents\\GitHub\\RemnantWorldChanger\\RemnantWorldChanger.csproj",
+      "projectUniqueName": "C:\\Users\\AuriCrystal\\Documents\\VisualProjects\\RemnantWorldChanger\\RemnantWorldChanger.csproj",
       "projectName": "RemnantWorldChanger",
-      "projectPath": "C:\\Users\\Josh\\Documents\\GitHub\\RemnantWorldChanger\\RemnantWorldChanger.csproj",
-      "packagesPath": "C:\\Users\\Josh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Josh\\Documents\\GitHub\\RemnantWorldChanger\\obj\\publish\\win-x64\\",
+      "projectPath": "C:\\Users\\AuriCrystal\\Documents\\VisualProjects\\RemnantWorldChanger\\RemnantWorldChanger.csproj",
+      "packagesPath": "C:\\Users\\AuriCrystal\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\AuriCrystal\\Documents\\VisualProjects\\RemnantWorldChanger\\obj\\publish\\win-x64\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Josh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\AuriCrystal\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

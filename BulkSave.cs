@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
 using System.IO;
@@ -30,6 +31,7 @@ namespace RemnantWorldChanger
         }
         public ObservableCollection<DataPackage> SaveInfo { get; set; }
 
+
         public Dictionary<Guid, byte[]> GuidToBytes { get; set; }
 
         public BulkSave(ObservableCollection<DataPackage> header, Dictionary<Guid, byte[]> data)
@@ -37,7 +39,9 @@ namespace RemnantWorldChanger
             SaveInfo = header;
             GuidToBytes = data;
         }
-        public BulkSave()
+
+
+        public  BulkSave()
         {
             SaveInfo = new ObservableCollection<DataPackage>();
             GuidToBytes = new Dictionary<Guid, byte[]>();
@@ -177,14 +181,16 @@ namespace RemnantWorldChanger
 
         public bool Contains(string s)
         {
-            var _ = new string[] { Name, World, Mods, Difficulty.ToString() };
-            return _.ToList().Select(x =>x.ToLower()).Any(x=>x.Contains(s));
+
+            var _ = new string[] { Name, World, Mods, Difficulty.ToString() };   
             
+            return _.ToList().Select(x => x.ToLower()).Any(x => x.Contains(s.ToLower()));
+
         }
 
         public bool Contains(params string[] st)
         {
-            return st.ToList().Any(x => Contains(x));
+            return st.ToList().All(x => Contains(x));
         }
         public override int GetHashCode() => (Difficulty, Name, Mods).GetHashCode();
     }

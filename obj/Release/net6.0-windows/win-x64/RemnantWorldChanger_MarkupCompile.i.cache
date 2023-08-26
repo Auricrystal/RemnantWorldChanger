@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\obj\Release\net6.0-windows\win-x64\
+C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\obj\Release\net6.0-windows\win-x64\
 RemnantWorldChanger
 none
 false
 TRACE;RELEASE;NET;NET6_0;NETCOREAPP
-C:\Users\Josh\Documents\GitHub\RemnantWorldChanger\App.xaml
+C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\App.xaml
 2886979146
 
-9733787008
+10716189407
 194726069201
 MainWindow.xaml;SaveEditor.xaml;
 
-False
+True
 

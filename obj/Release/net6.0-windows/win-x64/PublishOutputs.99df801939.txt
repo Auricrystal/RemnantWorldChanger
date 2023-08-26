@@ -1,0 +1,2 @@
+C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\bin\Release\RemnantWorldChanger.dll.config
+C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\bin\Release\RemnantWorldChanger.exe
