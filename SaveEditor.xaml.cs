@@ -25,7 +25,7 @@ namespace RemnantWorldChanger
         private DataPackage? Original { get; set; }
         private BulkSave Saves { get; set; }
         public DataPackage? Save { get; private set; }
-        public SaveEditor(BulkSave bs,DataPackage dp)
+        public SaveEditor(BulkSave bs, DataPackage dp)
         {
             InitializeComponent();
             this.Original = dp;
@@ -35,7 +35,7 @@ namespace RemnantWorldChanger
 
         private string SerializeDataPackage(DataPackage dp)
         {
-           return JsonSerializer.Serialize<DataPackage>(dp, new JsonSerializerOptions
+            return JsonSerializer.Serialize<DataPackage>(dp, new JsonSerializerOptions
             {
                 WriteIndented = true,
                 Converters = { new JsonStringEnumConverter() }
@@ -61,16 +61,17 @@ namespace RemnantWorldChanger
             {
                 var _ = MessageBox.Show(je.Message + "\n\nRevert Data?", "Json Deserialization Error", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (_ == MessageBoxResult.Yes)
-                    EditorWindow.Text=SerializeDataPackage(Original);
+                    EditorWindow.Text = SerializeDataPackage(Original);
 
             }
             if (temp == null)
                 return;
+            MessageBoxResult result = MessageBoxResult.Yes;
             if (Saves.SaveInfo.Contains(temp))
-            {
-                MessageBox.Show("An entry already exists with those parameters.", "Duplicate Entry", MessageBoxButton.OK, MessageBoxImage.Error);
+                result = MessageBox.Show("An entry already exists with those parameters, Overwrite?", "Duplicate Entry", MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+            if (result != MessageBoxResult.Yes)
                 return;
-            }
             Save = temp;
             Debug.WriteLine($"Updated: {Save}");
             DialogResult = true;

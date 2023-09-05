@@ -13,13 +13,14 @@
     <DockPanel Background="#220000">
         <Menu DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
             <MenuItem Header="Options">
+                
                 <MenuItem Header="Auto-Update" IsCheckable="True" IsEnabled="False"/>
                 <MenuItem Header="Check for update" IsEnabled="False"/>
                 <MenuItem Header="Open Data Folder" Click="ViewDataFolder_Click"/>
                 <MenuItem Name="btnGenExample" Header="Generate Test Saves" Click="GenerateExamples_Click" Visibility="Collapsed" IsEnabled="false"/>
             </MenuItem>
             <CheckBox Name="cbKeepSave" Content="Keep Checkpoint" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
-            
+            <MenuItem Name="btnRestoreBackup" Header="Restore Backup"  IsEnabled="False" Click="RestoreBackup_Click"/>
         </Menu>
         <DockPanel DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
             <ComboBox Name="cmbSaveType" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="100" />

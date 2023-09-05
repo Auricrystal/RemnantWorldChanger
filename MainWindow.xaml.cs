@@ -149,6 +149,24 @@ namespace RemnantWorldChanger
 
         }
 
+        private KeyValuePair<string, byte[]>? savebackup;
+
+        public void Backup(string path)
+        {
+            savebackup ??= new KeyValuePair<string, byte[]>(path, File.ReadAllBytes(path));
+            btnRestoreBackup.IsEnabled = true;
+        }
+        public void Restore()
+        {
+            if (savebackup is null)
+                return;
+
+            File.WriteAllBytes(savebackup.Value.Key, savebackup.Value.Value);
+            MessageBox.Show("Save Restored");
+            savebackup = null;
+            btnRestoreBackup.IsEnabled = false;
+        }
+
         private Dictionary<string, byte[]>? lockedsaves;
         private Dictionary<string, byte[]> LockedSaves
         {
@@ -218,7 +236,7 @@ namespace RemnantWorldChanger
                 }
             else
             {
-                Debug.WriteLine("Dialog False"); 
+                Debug.WriteLine("Dialog False");
                 return;
             }
 
@@ -239,6 +257,7 @@ namespace RemnantWorldChanger
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            Restore();
             PackageWatcher.EnableRaisingEvents = false;
             Saves.SerializeData(Packages);
         }
@@ -310,6 +329,7 @@ namespace RemnantWorldChanger
 
         private void LoadSave_Click(object sender, RoutedEventArgs e)
         {
+
             DataPackage? _ = FindSelected();
             Debug.WriteLine($"Loading: {_}");
             if (_ is null)
@@ -321,7 +341,10 @@ namespace RemnantWorldChanger
             ofd.Title = "Overwrite Save";
 
             if (ofd.ShowDialog() == true)
+            {
+                Backup(ofd.FileName);
                 File.WriteAllBytes(ofd.FileName, Saves.GuidToBytes[_.ID]);
+            }
             else
                 Debug.WriteLine("Load Save Failed!");
         }
@@ -394,6 +417,9 @@ namespace RemnantWorldChanger
             display.Regenerate();
         }
 
-
+        private void RestoreBackup_Click(object sender, RoutedEventArgs e)
+        {
+            Restore();
+        }
     }
 }

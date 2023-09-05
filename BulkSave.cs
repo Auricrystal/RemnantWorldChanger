@@ -7,7 +7,9 @@ using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,6 +17,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Markup;
 using static RemnantWorldChanger.DataPackage;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -33,19 +36,22 @@ namespace RemnantWorldChanger
 
 
         public Dictionary<Guid, byte[]> GuidToBytes { get; set; }
-
-        public BulkSave(ObservableCollection<DataPackage> header, Dictionary<Guid, byte[]> data)
+        public BulkSave()
         {
+            SaveInfo = new ObservableCollection<DataPackage>();
+            GuidToBytes = new Dictionary<Guid, byte[]>();
+        }
+
+        public BulkSave(ObservableCollection<DataPackage>? header, Dictionary<Guid, byte[]>? data) : this()
+        {
+            if (header is null || data is null)
+                return;
             SaveInfo = header;
             GuidToBytes = data;
         }
 
 
-        public  BulkSave()
-        {
-            SaveInfo = new ObservableCollection<DataPackage>();
-            GuidToBytes = new Dictionary<Guid, byte[]>();
-        }
+
 
         public void AddSave(byte[] savedata, SaveType type = SaveType.All, string world = "Earth", string name = "Unknown", SaveDifficulty diff = SaveDifficulty.Unset, string mods = "")
         {
@@ -93,33 +99,76 @@ namespace RemnantWorldChanger
             var indexes = Directory.EnumerateFiles(path, "*.RIndex");
             MessageBoxResult result = MessageBoxResult.None;
             if (indexes.Count() > 1)
-            {
                 result = MessageBox.Show("Merge Packages?", "Multiple Data Files", MessageBoxButton.YesNo, MessageBoxImage.Information);
-            }
-            ObservableCollection<DataPackage> header = new ObservableCollection<DataPackage>();
-            Dictionary<Guid, byte[]> bulk = new Dictionary<Guid, byte[]>();
+
+            if (result == MessageBoxResult.No)
+                return new BulkSave(
+                    JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(path + "\\Data.RIndex")),
+                    JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(path + "\\Data.RData")));
+            result = MessageBoxResult.None;
+            ObservableCollection<DataPackage> header = new();
+            Dictionary<Guid, byte[]> bulk = new();
 
             foreach (string index in indexes)
             {
+                Debug.WriteLine("Start Deserialize");
+
                 var data = Path.ChangeExtension(index, ".RData");
                 if (!File.Exists(data))
                 {
                     MessageBox.Show($"{Path.GetFileName(data)} does not exist!!");
                     continue;
                 }
-                header = new ObservableCollection<DataPackage>(header.Union(JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(index))!));
+                var _ = JsonSerializer.Deserialize<ObservableCollection<DataPackage>>(File.ReadAllText(index));
+                if (_ is null)
+                    continue;
+
+                List<DataPackage> dupelist, newlist;
+                if (header.Count == 0)
+                {
+                    Debug.WriteLine("Initial Deserialization");
+                    header = new ObservableCollection<DataPackage>(_);
+                    Debug.WriteLine("Data 1 Deserialization");
+
+                    JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(data))!.ToList().ForEach(pair => bulk[pair.Key] = pair.Value);
+
+                    Debug.WriteLine($"Data: {bulk.Count}");
+                    continue;
+                }
+
+
+                dupelist = _.ToList().FindAll(x => header.Any(y => y.ID == x.ID));
+                newlist = _.ToList().FindAll(x => !header.Any(y => y.ID == x.ID));
+
+                Debug.WriteLine($"New: {newlist.Count}\nDupes: {dupelist.Count}");
+
+
+                foreach (var item in newlist)
+                    header.Add(item);
+                int i = dupelist.Count;
+            
+                foreach (var dp in dupelist)
+                {
+                    var id = header.ToList().FindIndex(x => x.ID == dp.ID);
+                    result = MessageBox.Show($"Duplicate GUID Entries ({i--}):\n\nExisting:\n{header[id]}\n\nNew:\n{dp}\n\nReplace existing with new?", "Duplicate GUID", MessageBoxButton.YesNo);
+                    if (result == MessageBoxResult.Yes)
+                        header[id] = dp;
+                }
+
+
+
+
+                Debug.WriteLine("Data 2 Deserialization");
 
                 JsonSerializer.Deserialize<Dictionary<Guid, byte[]>>(File.ReadAllText(data))!.ToList().ForEach(pair => bulk[pair.Key] = pair.Value);
+
+                Debug.WriteLine($"Data: {bulk.Count}");
 
             }
             var bs = new BulkSave(header, bulk);
 
-            if (result == MessageBoxResult.Yes)
-            {
-                Directory.Delete(path, true);
-                bs.SerializeData(path);
-            }
-
+            Directory.Delete(path, true);
+            bs.SerializeData(path);
             return bs;
         }
 
@@ -182,8 +231,8 @@ namespace RemnantWorldChanger
         public bool Contains(string s)
         {
 
-            var _ = new string[] { Name, World, Mods, Difficulty.ToString() };   
-            
+            var _ = new string[] { Name, World, Mods, Difficulty.ToString() };
+
             return _.ToList().Select(x => x.ToLower()).Any(x => x.Contains(s.ToLower()));
 
         }

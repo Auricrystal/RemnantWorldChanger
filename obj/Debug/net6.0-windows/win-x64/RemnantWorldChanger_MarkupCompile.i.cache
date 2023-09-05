@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\App.xaml
-2886979146
-
-101329813371
+3-634756977
+130864528
+122107856387
 194726069201
-MainWindow.xaml;SaveEditor.xaml;
+DataMergeDialog.xaml;MainWindow.xaml;SaveEditor.xaml;
 
-False
+True
 

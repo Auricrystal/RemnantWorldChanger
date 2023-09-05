@@ -40,3 +40,4 @@ C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\obj\Release\ne
 C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\obj\Release\net6.0-windows\win-x64\refint\RemnantWorldChanger.dll
 C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\obj\Release\net6.0-windows\win-x64\RemnantWorldChanger.genruntimeconfig.cache
 C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\obj\Release\net6.0-windows\win-x64\ref\RemnantWorldChanger.dll
+C:\Users\AuriCrystal\Documents\VisualProjects\RemnantWorldChanger\obj\Release\net6.0-windows\win-x64\RemnantWorldChanger_Content.g.cs

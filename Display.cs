@@ -24,6 +24,18 @@ namespace RemnantWorldChanger
 
         private readonly TextBox tbSearchBar;
 
+        public string SaveName
+        {
+            get
+            {
+                if (SaveList is null || SaveList.ItemsSource is null)
+                    return "";
+                if (SaveList.SelectedIndex == -1)
+                    SaveList.SelectedIndex = 0;
+                return ((KeyValuePair<string, string>)SaveList.SelectedItem).Key;
+            }
+        }
+
         public SaveType SaveType
         {
             get
@@ -31,6 +43,19 @@ namespace RemnantWorldChanger
                 return (SaveType)cbSaveType.SelectedItem;
             }
         }
+        public SaveDifficulty SaveDifficulty
+        {
+            get
+            {
+                if (DifficultyList is null || DifficultyList.ItemsSource is null)
+                    return SaveDifficulty.Unset;
+
+                if (DifficultyList.SelectedIndex == -1)
+                    DifficultyList.SelectedIndex = 0;
+                return (SaveDifficulty)DifficultyList.SelectedItem;
+            }
+        }
+
         public void UpdateData(ObservableCollection<DataPackage> packages)
         {
             DataPackages = packages;
@@ -47,6 +72,7 @@ namespace RemnantWorldChanger
             saveList.SelectionChanged += SaveList_SelectionChanged;
             difficultyList.SelectionChanged += DifficultyList_SelectionChanged;
             modifierList.SelectionChanged += ModifierList_SelectionChanged;
+            modifierList.DataContextChanged += ModifierList_DataContextChanged;
 
             this.tbSearchBar = tbSearchBar;
 
@@ -56,6 +82,12 @@ namespace RemnantWorldChanger
             saveType.SelectionChanged += SaveType_SelectionChanged;
 
             Regenerate();
+        }
+
+        private void ModifierList_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+        {
+            Debug.WriteLine("Mod List Changed");
+
         }
 
         private void SaveType_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -84,6 +116,7 @@ namespace RemnantWorldChanger
         public void Regenerate()
         {
             SaveList.ItemsSource = SearchBar().GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.First().World).OrderBy(x => x.Value).ThenBy(x => x.Key);
+            DifficultyList.SelectedIndex = -1;
             ModifierList.ItemsSource = SearchBar().Select(x => x.Mods).Distinct().OrderBy(x => x);
 
         }
@@ -108,11 +141,10 @@ namespace RemnantWorldChanger
                     CollectionViewSource.GetDefaultView(ModifierList.ItemsSource).Filter = o => false;
                 return;
             }
-            var name = ((KeyValuePair<string, string>)SaveList.SelectedItem).Key;
 
             CollectionViewSource.GetDefaultView(DifficultyList.ItemsSource).Filter = o =>
             {
-                return SearchBar().Where(x => x.Name == name).Select(x => x.Difficulty.ToString()).Contains(o.ToString());
+                return SearchBar().Where(x => x.Name == SaveName).Select(x => x.Difficulty.ToString()).Contains(o.ToString());
             };
 
             if (DifficultyList.SelectedIndex == -1)
@@ -121,35 +153,35 @@ namespace RemnantWorldChanger
 
             //Debug.WriteLine("Calling Difflist");
             DifficultyList_SelectionChanged(sender, e);
-
         }
+
+
         private void DifficultyList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SaveList.SelectedIndex == -1)
                 return;
             if (DifficultyList.SelectedIndex == -1)
+            {
+                if (ModifierList.ItemsSource is not null)
+                    CollectionViewSource.GetDefaultView(ModifierList.ItemsSource).Filter = o => false;
                 return;
-            //Debug.WriteLine($"DifficultyList Changed{DifficultyList.SelectedIndex}");
+            }
+
+
 
             var name = ((KeyValuePair<string, string>)SaveList.SelectedItem).Key;
             var diff = DifficultyList.SelectedItem.ToString();
 
-            // Debug.WriteLine($"Name: {name} Diff:{diff} {DifficultyList.Items.Count}");
-
-            // Debug.WriteLine("MATCHES"+string.Join("\n", SearchBar().Where(x => x.Name == name && x.Difficulty.ToString() == diff)));
 
             CollectionViewSource.GetDefaultView(ModifierList.ItemsSource).Filter = o =>
             {
                 return SearchBar().Where(x => x.Name == name && x.Difficulty.ToString() == diff).Select(y => y.Mods).Contains(o.ToString());
             };
 
-            //Debug.WriteLine($"Mods: {ModifierList.Items.Count}");
 
             if (ModifierList.SelectedIndex == -1)
                 ModifierList.SelectedIndex = 0;
 
-
-            // Debug.WriteLine("Calling Modlist");
             ModifierList_SelectionChanged(sender, e);
 
         }
